@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:login_signup/features/Authentication/screens/WelcomeScreen.dart';
+import 'package:login_signup/features/Client/screens/bottom_bar.dart';
+import 'package:login_signup/features/Client/screens/home_screen.dart';
+import 'package:login_signup/util/app_styles.dart';
+import 'package:login_signup/util/caroussel.dart';
 
 
 void main() {
@@ -18,10 +22,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
 
-
+ primaryColor: primary,
         useMaterial3: true,
       ),
-      home: const WelcomeScreen(),
+      home: const bottom_bar(),
     );
   }
 }
