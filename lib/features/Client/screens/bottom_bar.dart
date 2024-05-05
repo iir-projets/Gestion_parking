@@ -14,13 +14,13 @@ class bottom_bar extends StatefulWidget {
 }
 
 class _BottomBarState extends State<bottom_bar> {
- int _selectedIndex=1;
+ int _selectedIndex=2;
   static final List<Widget> _widgetOptions=<Widget>
   [
     HomeScreen(),
     ParkingCarousel(),
     const Text("Ticket"),
-    const Text("Profile"),
+
   ];
 
   void _onItemTapped(int i)
@@ -55,9 +55,7 @@ class _BottomBarState extends State<bottom_bar> {
         BottomNavigationBarItem(icon: Icon(FluentSystemIcons.ic_fluent_ticket_regular)
             ,activeIcon: Icon(FluentSystemIcons.ic_fluent_ticket_filled)
             ,label: "Ticket"),
-        BottomNavigationBarItem(icon: Icon(FluentSystemIcons.ic_fluent_person_regular)
-            ,activeIcon: Icon(FluentSystemIcons.ic_fluent_person_filled)
-            ,label: "Profile")
+
       ],
 
       ),

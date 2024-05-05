@@ -1,9 +1,11 @@
 
+import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:login_signup/features/Client/screens/ticket_screen.dart';
 import 'package:lottie/lottie.dart';
 import '../../../util/app_info_list.dart';
 import '../../../util/app_styles.dart';
-import 'dart:math';
+
 
 class BookingPage extends StatefulWidget {
   final int parkingId;
@@ -51,12 +53,13 @@ class _BookingPageState extends State<BookingPage> {
     // Search for the parking in the parkingList based on the ID
     Map<String, dynamic>? parking = parkingList.firstWhere(
           (parking) => parking['id'] == parkingId,
-
     );
 
-    // If the parking is found, return its price per hour
-    // Otherwise, return a default value
-    return  20; // Default price per hour
+    if (parking != null) {
+      return parking['price'];
+    } else {
+      return 20;
+    }
   }
   int _calculateTotalPrice(int i) {
 
@@ -77,6 +80,7 @@ class _BookingPageState extends State<BookingPage> {
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
+            fontFamily: "Sans Serif",
           ),
         ),
         iconTheme: const IconThemeData(
@@ -209,7 +213,7 @@ class _BookingPageState extends State<BookingPage> {
                         Row(
                           children: [
                             Icon(
-                              Icons.currency_pound,
+                              FluentSystemIcons.ic_fluent_currency_filled,
                               size: 30,
                               color: Styles.primaryColor,
                             ),
@@ -227,12 +231,27 @@ class _BookingPageState extends State<BookingPage> {
                     ),
                     InkWell(
                       onTap: () {
+    if (_selectedTimeIndex != 0) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              TicketScreen(
+                parkingName: parkingName,
+                selectedSlot: _slots[_selectedSlotIndex],
+                selectedTimeIndex: _selectedTimeIndex,
+                totalPrice: _calculateTotalPrice(_selectedTimeIndex),
+              ),
+        ),
+
+      );
+    }
                         // Perform action on tap
                       },
                       child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 60, vertical: 20),
                         decoration: BoxDecoration(
-                          color: Styles.primaryColor,
+                          gradient: primaryGradient,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
