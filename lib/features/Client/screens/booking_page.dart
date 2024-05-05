@@ -1,15 +1,77 @@
 
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import '../../../util/app_info_list.dart';
 import '../../../util/app_styles.dart';
 import 'dart:math';
 
-class BookingPage extends StatelessWidget {
+class BookingPage extends StatefulWidget {
+  final int parkingId;
+
+  const BookingPage({Key? key, required this.parkingId}) : super(key: key);
+
+  @override
+  _BookingPageState createState() => _BookingPageState();
+}
+String getParkingName(int parkingId) {
+  // Search for the parking name based on the parking ID in the parkingList
+  Map<String, dynamic>? parking = parkingList.firstWhere(
+        (parking) => parking['id'] == parkingId,
+    orElse: () => {'place': 'Unknown Parking'}, // Default value for unknown parking
+  );
+
+  // Return the name of the parking if found, otherwise return the default value
+  return parking['place'];
+}
+
+class _BookingPageState extends State<BookingPage> {
+
+  int _selectedSlotIndex = 0;
+  int _selectedTimeIndex = 0;
+  List<String> _slots = [];
+  double _pricePerHour=20;
+
+  @override
+  void initState() {
+    super.initState();
+    _slots = getParkingSlots(widget.parkingId);
+  }
+
+  List<String> getParkingSlots(int parkingId) {
+    // Retrieve the slots based on the parking ID from the parkingList
+    Map<String, dynamic>? parking = parkingList.firstWhere(
+          (parking) => parking['id'] == parkingId,
+      orElse: () => {'slots': []}, // Default value for unknown parking
+    );
+
+    // Return the slots if found, otherwise return an empty list
+    return List<String>.from(parking['slots']);
+  }
+  int getPricePerHour(int parkingId) {
+    // Search for the parking in the parkingList based on the ID
+    Map<String, dynamic>? parking = parkingList.firstWhere(
+          (parking) => parking['id'] == parkingId,
+
+    );
+
+    // If the parking is found, return its price per hour
+    // Otherwise, return a default value
+    return  20; // Default price per hour
+  }
+  int _calculateTotalPrice(int i) {
+
+    int pricePerHour = getPricePerHour(widget.parkingId);
+    int totalPrice = pricePerHour * i;
+    return totalPrice;
+  }
+
   @override
   Widget build(BuildContext context) {
+    String parkingName = getParkingName(widget.parkingId);
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Styles.primaryColor,
+        backgroundColor: Styles.secondaryColor,
         title: const Text(
           "BOOK SLOT",
           style: TextStyle(
@@ -39,13 +101,13 @@ class BookingPage extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 20),
-                const Row(
+                 Row( mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Book Now ",
+                      "Parking: $parkingName",
                       style: TextStyle(
                         fontSize: 20,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                     )
                   ],
@@ -58,128 +120,81 @@ class BookingPage extends StatelessWidget {
                 const Row(
                   children: [
                     Text(
-                      "Choose a spot ",
+                      "Choose a spot ",style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                     )
                   ],
                 ),
                 SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: 'John Doe', // Replace with random value
-                        decoration: InputDecoration(
-                          fillColor: Styles.bgColor,
-                          filled: true,
-                          border: InputBorder.none,
-                          prefixIcon: Icon(
-                            Icons.person,
-                            color: Styles.primaryColor,
-                          ),
-                          hintText: "ZYX Kumar",
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-                SizedBox(height: 30),
-                const Row(
-                  children: [
-                    Text(
-                      "Enter Vehicle Number ",
-                    )
-                  ],
-                ),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: 'WB 04 ED 0987', // Replace with random value
-                        decoration: InputDecoration(
-                          fillColor: Styles.bgColor,
-                          filled: true,
-                          border: InputBorder.none,
-                          prefixIcon: Icon(
-                            Icons.car_rental,
-                            color: Styles.primaryColor,
-                          ),
-                          hintText: "WB 04 ED 0987",
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-                SizedBox(height: 20),
-                const Row(
-                  children: [
-                    Text(
-                      "Choose Slot Time (in Minutes)",
-                    )
-                  ],
-                ),
-                SizedBox(height: 10),
-                Slider(
-                  mouseCursor: MouseCursor.defer,
-                  thumbColor: Styles.secondaryColor,
-                  activeColor: Styles.secondaryColor,
-                  inactiveColor: Styles.bgColor,
-                  label: "${Random().nextInt(60)} min", // Replace with random value
-                  value: Random().nextInt(60).toDouble(), // Replace with random value
-                  onChanged: (v) {
-                    // Do nothing
+                DropdownButtonFormField(
+                  value: _selectedSlotIndex,
+                  items: _slots.map((slot) {
+                    return DropdownMenuItem(
+                      value: _slots.indexOf(slot),
+                      child: Text(slot),
+                    );
+                  }).toList(),
+                  onChanged: (index) {
+                    setState(() {
+                      _selectedSlotIndex = index!;
+
+
+                      // Call a function to update the price based on the selected slot
+                    });
                   },
-                  divisions: 5,
-                  min: 10,
-                  max: 60,
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text("10"),
-                      Text("20"),
-                      Text("30"),
-                      Text("40"),
-                      Text("50"),
-                      Text("60"),
-                    ],
+                SizedBox(height: 50),
+
+
+                const Text(
+                  "Choose Slot Time (in Hours):",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
-                      "Your Slot Name",
-                    ),
-                  ],
-                ),
                 SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Styles.primaryColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Slot Name",
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                DropdownButtonFormField(
+                  value: _selectedTimeIndex,
+                  items: [
+                    DropdownMenuItem(
+                      value: 0,
+                      child: Text("Not selected"),
+                    ),
+                    DropdownMenuItem(
+                      value: 1,
+                      child: Text("1h"),
+                    ),
+                    DropdownMenuItem(
+                      value: 2,
+                      child: Text("2h"),
+                    ),
+                    DropdownMenuItem(
+                      value: 4,
+                      child: Text("4h"),
+                    ),
+                    DropdownMenuItem(
+                      value: 8,
+                      child: Text("8h"),
+                    ),
+                    DropdownMenuItem(
+                      value: 24,
+                      child: Text("24h"),
                     ),
                   ],
+                  onChanged: (index) {
+                    setState(() {
+                      _selectedTimeIndex = index!;
+
+                    });
+                  },
                 ),
+
+
+                SizedBox(height: 20),
+
                 SizedBox(height: 80),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -194,12 +209,12 @@ class BookingPage extends StatelessWidget {
                         Row(
                           children: [
                             Icon(
-                              Icons.currency_rupee,
+                              Icons.currency_pound,
                               size: 30,
                               color: Styles.primaryColor,
                             ),
                             Text(
-                              "${Random().nextInt(200)}",
+                              "${_calculateTotalPrice(_selectedTimeIndex)}",
                               style: TextStyle(
                                 fontSize: 40,
                                 fontWeight: FontWeight.w700,

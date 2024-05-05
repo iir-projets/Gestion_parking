@@ -3,10 +3,9 @@ import 'package:animate_do/animate_do.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:login_signup/features/Client/screens/booking_page.dart';
-import 'package:login_signup/features/Client/screens/parking.dart';
 
-import 'app_info_list.dart';
-import 'app_styles.dart';
+import '../../../util/app_info_list.dart';
+import '../../../util/app_styles.dart';
 
 
 
@@ -171,7 +170,8 @@ class _ParkingCarouselState extends State<ParkingCarousel> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => BookingPage()),
+                              MaterialPageRoute(builder: (context) => BookingPage(parkingId: parkingList[currentIndex]['id'])),
+
                             );
                           },
                           child: Container(

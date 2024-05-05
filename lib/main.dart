@@ -4,7 +4,7 @@ import 'package:login_signup/features/Authentication/screens/WelcomeScreen.dart'
 import 'package:login_signup/features/Client/screens/bottom_bar.dart';
 import 'package:login_signup/features/Client/screens/home_screen.dart';
 import 'package:login_signup/util/app_styles.dart';
-import 'package:login_signup/util/caroussel.dart';
+import 'package:login_signup/features/Client/screens/parkingPage.dart';
 
 
 void main() {

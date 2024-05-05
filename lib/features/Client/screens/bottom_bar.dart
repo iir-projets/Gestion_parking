@@ -2,9 +2,9 @@
 import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:login_signup/features/Client/screens/home_screen.dart';
-import 'package:login_signup/util/caroussel.dart';
+import 'package:login_signup/features/Client/screens/parkingPage.dart';
 
-import 'parkPROTOTYPE.dart';
+
 
 class bottom_bar extends StatefulWidget {
   const bottom_bar({super.key});
