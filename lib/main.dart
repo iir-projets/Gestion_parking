@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'Superviseur/spots.dart';
 import 'controller/sidebar_controller.dart';
 import 'Admin/dashboard.dart';
-import 'Admin/sidebar_admin.dart'; // Import the admin sidebar file
-import 'Superviseur/sidebar_sup.dart'; // Import the supervisor sidebar file
+import 'Admin/sidebar_admin.dart';
+import 'Superviseur/sidebar_sup.dart';
 
 
 

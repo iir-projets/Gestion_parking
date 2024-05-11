@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '/Superviseur/Parking/pages/add.dart';
-import '/Superviseur/Parking/pages/remove.dart';
-import '/Superviseur/Parking/pages/modify.dart';
-import '/Superviseur/Parking/pages/list.dart';
+import '/Superviseur/Place/pages/add.dart';
+import '/Superviseur/Place/pages/remove.dart';
+import '/Superviseur/Place/pages/modify.dart';
+import '/Superviseur/Place/pages/list.dart';
 
 class SpotsPage extends StatelessWidget {
   const SpotsPage({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
+    final int idsup=1;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
