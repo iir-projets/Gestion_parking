@@ -1,17 +1,15 @@
-import 'package:Web_flutter/Admin/parkings.dart';
-import 'package:Web_flutter/Admin/superviseurs.dart';
+
+import 'package:Web_flutter/sidebar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'Admin/dashboard.dart';
+import 'Admin/parkings.dart';
+import 'Admin/superviseurs.dart';
+import 'Authentication/screens/LoginScreen.dart';
+import 'Superviseur/reservations.dart';
 import 'Superviseur/spots.dart';
 import 'controller/sidebar_controller.dart';
-import 'Admin/dashboard.dart';
-import 'Admin/sidebar_admin.dart';
-import 'Superviseur/sidebar_sup.dart';
 
-
-
-bool isAdmin = false;
 
 
 
@@ -28,67 +26,42 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green),
-      home: const MainScreen(),
+       initialRoute: '/login',
+        getPages: [
+          GetPage(name: '/login', page: () => LoginScreen()),
+          GetPage(name: '/navscreen', page: () =>NavScreen(isAdmin: false)),
+        ],
     );
   }
 }
+class NavScreen extends StatefulWidget {
+  final bool isAdmin;
 
-// Change this based on the user type
-
-class MainScreen extends StatelessWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const NavScreen({Key? key, required this.isAdmin}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    Widget sidebar;
-    if (isAdmin) {
-      sidebar = SidebarAdmin();
-    } else {
-      sidebar = SidebarSuperviseur();
-    }
+  _NavScreenState createState() => _NavScreenState();
+}
 
+class _NavScreenState extends State<NavScreen> {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey[900],
-        title: const Text('Dashboard'), // Set the title of the AppBar
-        centerTitle: false,
+
       ),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Render the sidebar based on user type
-          sidebar,
-          // Main Content
+
+          Sidebar(isAdmin: widget.isAdmin),
+
           Expanded(
             child: Obx(() {
               final SidebarController sidebarController = Get.find();
               final int selectedIndex = sidebarController.index.value;
-              if (isAdmin) {
-                // Render pages based on admin user type
-                switch (selectedIndex) {
-                  case 0:
-                    return const Dashboard();
-                  case 1:
-                    return const ParkingPage();
-                  case 2:
-                    return const SuperviseurPage();
-                  default:
-                    return Container();
-                }
-              } else {
-                // Render pages based on supervisor user type
-                switch (selectedIndex) {
-                  case 0:
-                    return const Dashboard();
-                  case 1:
-                    return const SpotsPage();
-                  case 2:
-                    return const SuperviseurPage();
-                // Add cases for supervisor-specific pages
-                  default:
-                    return Container();
-                }
-              }
+              return Pages.getPage(widget.isAdmin, selectedIndex);
             }),
           ),
         ],
@@ -96,3 +69,34 @@ class MainScreen extends StatelessWidget {
     );
   }
 }
+
+
+
+class Pages {
+  static Widget getPage(bool isAdmin, int selectedIndex) {
+    if (isAdmin) {
+      switch (selectedIndex) {
+        case 0:
+          return const Dashboard();
+        case 1:
+          return const ParkingPage();
+        case 2:
+          return const SuperviseurPage();
+        default:
+          return const Dashboard();
+      }
+    } else {
+      switch (selectedIndex) {
+        case 0:
+          return const Dashboard();
+        case 1:
+          return const SpotsPage();
+        case 2:
+          return const ReservationPage();
+        default:
+          return const Dashboard();
+      }
+    }
+  }
+}
+

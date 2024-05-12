@@ -22,17 +22,24 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> fetchCounts() async {
     try {
-      final supervisorResponse = await http.get(Uri.parse('https://api.example.com/supervisors/count'));
-      final parkingResponse = await http.get(Uri.parse('https://api.example.com/parkings/count'));
-
+      final supervisorResponse = await http.get(Uri.parse('http://localhost:8080/superviseurs/count'));
+      final parkingResponse = await http.get(Uri.parse('http://localhost:8080/parkings/count'));
+      print('Supervisor response status code: ${supervisorResponse.statusCode}');
+      print('Parking response status code: ${parkingResponse.statusCode}');
       if (supervisorResponse.statusCode == 200 && parkingResponse.statusCode == 200) {
-        final supervisorData = jsonDecode(supervisorResponse.body);
-        final parkingData = jsonDecode(parkingResponse.body);
+        final supervisorCountString = supervisorResponse.body;
+        final parkingCountString = parkingResponse.body;
+        final supervisorCountInt = int.tryParse(supervisorCountString);
+        final parkingCountInt = int.tryParse(parkingCountString);
 
-        setState(() {
-          supervisorCount = supervisorData['count'];
-          parkingCount = parkingData['count'];
-        });
+        if (supervisorCountInt != null && parkingCountInt != null) {
+          setState(() {
+            supervisorCount = supervisorCountInt;
+            parkingCount = parkingCountInt;
+          });
+        } else {
+          throw Exception('Invalid count data');
+        }
       } else {
         throw Exception('Failed to fetch counts');
       }
@@ -40,6 +47,8 @@ class _DashboardState extends State<Dashboard> {
       print('Error fetching counts: $e');
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +61,7 @@ class _DashboardState extends State<Dashboard> {
             Container(
               width: 150,
               height: 150,
-              color: Colors.blue,
+              color: Color(0xFFa5a5e0),
               child: Center(
                 child: Text(
                   supervisorCount != null ? '$supervisorCount' : '...',
@@ -69,7 +78,7 @@ class _DashboardState extends State<Dashboard> {
             Container(
               width: 150,
               height: 150,
-              color: Color(0xFF698CE1FF),
+              color: Colors.black,
               child: Center(
                 child: Text(
                   parkingCount != null ? '$parkingCount' : '...',

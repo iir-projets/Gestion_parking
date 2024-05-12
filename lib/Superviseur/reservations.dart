@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '/Superviseur/Place/pages/add.dart';
-import '/Superviseur/Place/pages/remove.dart';
 
-import '/Superviseur/Place/pages/list.dart';
+import 'Reserving/pages/list.dart';
 
-class SpotsPage extends StatelessWidget {
-  const SpotsPage({Key? key}) : super(key: key);
+class ReservationPage extends StatelessWidget {
+  const ReservationPage({Key? key}) : super(key: key);
+
+
   @override
   Widget build(BuildContext context) {
-    final int idsup=1;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -18,37 +18,19 @@ class SpotsPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                "Spots Page", // Headline text
+                "Reservations Page", // Headline text
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 150),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => SpotsAddPage()));
-                    },
-                    child: _buildContainer("Add", Icons.add),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => SpotsRemovePage()));
-                    },
-                    child: _buildContainer("Remove", Icons.remove),
-                  ),
-                ],
-              ),
-              SizedBox(height: 100),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => SpotsListPage()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ReservationsListPage()));
                     },
                     child: _buildContainer("List", Icons.panorama_fish_eye),
                   ),

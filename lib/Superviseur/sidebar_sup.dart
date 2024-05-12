@@ -8,7 +8,7 @@ class SidebarSuperviseur extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SidebarController sidebarController = Get.find();
-    final drawerTextColor = TextStyle(color: Colors.grey[600]);
+    final drawerTextColor = TextStyle(color: Colors.white70);
 
     final tilePadding = const EdgeInsets.only(left: 8.0, right: 8, top: 8);
 
@@ -16,7 +16,7 @@ class SidebarSuperviseur extends StatelessWidget {
     final bool isAdmin = true; // Example: Assuming the user is admin
 
     return Drawer(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Color(0xFFa5a5e0),
       elevation: 0,
       child: Obx(() => Column(
         children: [
@@ -43,7 +43,7 @@ class SidebarSuperviseur extends StatelessWidget {
             child: ListTile(
               leading: const Icon(Icons.local_parking),
               title: Text(
-                'P A R K I N G',
+                'S P O T ',
                 style: drawerTextColor,
               ),
               onTap: () => sidebarController.index.value = 1,
@@ -55,7 +55,7 @@ class SidebarSuperviseur extends StatelessWidget {
             Padding(
               padding: tilePadding,
               child: ListTile(
-                leading: const Icon(Icons.person),
+                leading: const Icon(Icons.fax),
                 title:  Text(
                   'R E S E R V A T I O N S',
                   style: drawerTextColor,

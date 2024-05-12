@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 class SpotsAddPage extends StatefulWidget {
   const SpotsAddPage({Key? key}) : super(key: key);
 
@@ -9,22 +11,44 @@ class SpotsAddPage extends StatefulWidget {
 
 class _SpotsAddPageState extends State<SpotsAddPage> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _parkingNameController = TextEditingController();
-  TextEditingController _addressController = TextEditingController();
-  String? _selectedSupervisor;
+   var supervisorId ; // Ex
+  String? parkingName;
+  int? parkingId;
+  int? placeId;
+  String? addedPlaceInfo;
 
-  List<String> supervisors = ['Supervisor A', 'Supervisor B', 'Supervisor C']; // Example list of supervisors
+  @override
+  void initState() {
+    super.initState();
+    _initializePage();
+  }
 
+  Future<void> _initializePage() async {
+    await fetchSupervisorID();
+    if (supervisorId != null) {
+      fetchSupervisorParking(supervisorId!);
+    }
+  }
+
+  Future<void> fetchSupervisorID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      supervisorId = prefs.getInt('supervisorID');
+    });
+    if (supervisorId != null) {
+      fetchSupervisorParking(supervisorId!);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Parking'),
+        title: Text('Add Spot'),
       ),
-      body: Center( // Centering horizontally
+      body: Center(
         child: Container(
           width: 800,
-          height: 800,// Adjust the width as needed
+          height: 800,
           decoration: BoxDecoration(
             color: Colors.grey[200],
             borderRadius: BorderRadius.circular(20),
@@ -38,53 +62,25 @@ class _SpotsAddPageState extends State<SpotsAddPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'Add Parking',
+                    "Add a Parking's Spot",
                     style: TextStyle(fontSize: 20),
                   ),
                   SizedBox(height: 30),
-                  TextFormField(
-                    controller: _parkingNameController,
-                    decoration: InputDecoration(labelText: 'Parking Name'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter parking name';
-                      }
-                      return null;
-                    },
+                  Text(
+                    'Parking Name: $parkingName',
+                    style: TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 20),
-                  TextFormField(
-                    controller: _addressController,
-                    decoration: InputDecoration(labelText: 'Address'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter address';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    value: _selectedSupervisor,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedSupervisor = value;
-                      });
-                    },
-                    items: supervisors.map((String supervisor) {
-                      return DropdownMenuItem<String>(
-                        value: supervisor,
-                        child: Text(supervisor),
-                      );
-                    }).toList(),
-                    decoration: InputDecoration(labelText: 'Supervisor'),
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Please select supervisor';
-                      }
-                      return null;
-                    },
-                  ),
+
+
+                  if (addedPlaceInfo != null) ...[
+                    SizedBox(height: 20),
+                    Text(
+                      'Added Place Info: $addedPlaceInfo',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
@@ -92,7 +88,7 @@ class _SpotsAddPageState extends State<SpotsAddPage> {
                         _submitForm();
                       }
                     },
-                    child: Text('Submit'),
+                    child: Text('Add'),
                   ),
                 ],
               ),
@@ -103,22 +99,83 @@ class _SpotsAddPageState extends State<SpotsAddPage> {
     );
   }
 
-  void _submitForm() {
-    String parkingName = _parkingNameController.text;
-    String address = _addressController.text;
-    String supervisor = _selectedSupervisor!;
+  Future<void> fetchSupervisorParking(int supervisorId) async {
+    try {
+      var url = Uri.parse(
+          'http://localhost:8080/superviseur/$supervisorId/parking');
+      var response = await http.get(url);
 
-    // Perform any actions needed with the form data
-    print('Parking Name: $parkingName');
-    print('Address: $address');
-    print('Supervisor: $supervisor');
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data != null && data['nom_pk'] != null) {
 
-    _parkingNameController.clear();
-    _addressController.clear();
-    setState(() {
-      _selectedSupervisor = null;
-    });
+          parkingName = data['nom_pk'];
+          parkingId = data['id_pk'];
 
-    // You can also navigate back to the previous screen or perform any other action here
+          setState(() {});
+        } else {
+          print('Invalid parking data for supervisor ID: $supervisorId');
+        }
+      } else {
+        print('Failed to fetch parking: ${response.statusCode}');
+      }
+    } catch (e) {
+
+      print('Error fetching parking: $e');
+    }
+  }
+
+  Future<void> assignParkingToPlace(int placeId, int parkingId) async {
+    try {
+      var assignParkingUrl = Uri.parse('http://localhost:8080/place/$placeId/parking/$parkingId');
+      var response = await http.put(assignParkingUrl);
+
+      if (response.statusCode == 200) {
+        print('Place assigned to parking successfully');
+      } else {
+        print('Failed to assign place to parking: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error assigning parking to place: $e');
+    }
+  }
+
+  void _submitForm() async {
+    try {
+
+      var placeData = {'statut_pl': false};
+
+
+      var createPlaceUrl = Uri.parse('http://localhost:8080/place');
+      var createPlaceResponse = await http.post(
+        createPlaceUrl,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(placeData),
+      );
+
+      if (createPlaceResponse.statusCode == 200) {
+
+        print('Place created successfully');
+
+
+        var responseData = jsonDecode(createPlaceResponse.body);
+        var placeId = responseData['num_pl'];
+
+
+        assignParkingToPlace(placeId, parkingId!);
+
+
+        setState(() {
+          addedPlaceInfo = 'Place ID: $placeId';
+        });
+
+      } else {
+
+        print('Failed to create place: ${createPlaceResponse.statusCode}');
+      }
+    } catch (e) {
+
+      print('Error submitting form: $e');
+    }
   }
 }

@@ -1,10 +1,10 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:login_signup/features/Authentication/screens/WelcomeScreen.dart';
-import 'package:login_signup/features/Authentication/screens/regScreen.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../main.dart';
 
-import '../../Client/screens/bottom_bar.dart';
-import '../../Client/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -19,6 +19,41 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isEmailValid = false;
+  bool _isLoginFailed = false;
+
+  List<Map<String, dynamic>> admins = [];
+  List<Map<String, dynamic>> supervisors = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAdmins();
+    fetchSupervisors();
+  }
+
+  Future<void> fetchAdmins() async {
+    final response = await http.get(Uri.parse('http://localhost:8080/admins')); // Replace '/admin' with your endpoint
+    if (response.statusCode == 200) {
+      final List<dynamic> responseData = jsonDecode(response.body);
+      setState(() {
+        admins = responseData.map((adminData) => adminData as Map<String, dynamic>).toList();
+      });
+    } else {
+      print('Failed to fetch admins: ${response.statusCode}');
+    }
+  }
+
+  Future<void> fetchSupervisors() async {
+    final response = await http.get(Uri.parse('http://localhost:8080/superviseurs')); // Replace '/superviseur' with your endpoint
+    if (response.statusCode == 200) {
+      final List<dynamic> responseData = jsonDecode(response.body);
+      setState(() {
+        supervisors = responseData.map((supervisorData) => supervisorData as Map<String, dynamic>).toList();
+      });
+    } else {
+      print('Failed to fetch supervisors: ${response.statusCode}');
+    }
+  }
 
   @override
   void dispose() {
@@ -27,8 +62,42 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> login() async {
+    final enteredEmail = _emailController.text;
+    final enteredPassword = _passwordController.text;
+
+
+    final adminUser = admins.firstWhereOrNull((admin) =>
+    admin['email_admin'] == enteredEmail &&
+        admin['mdp_admin'] == enteredPassword);
+
+    final supervisorUser = supervisors.firstWhereOrNull((supervisor) =>
+    supervisor['email_sup'] == enteredEmail &&
+        supervisor['mdp_sup'] == enteredPassword);
+
+    if (adminUser != null) {
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('userType', 'admin');
+      prefs.setString('adminInfo', jsonEncode(adminUser));
+      Get.offAll(() => NavScreen(isAdmin: true));
+    } else if (supervisorUser != null) {
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setInt('supervisorID', supervisorUser['id_sup']);
+      final supervisorID = prefs.getInt('supervisorID');
+      print('Supervisor ID saved in SharedPreferences: $supervisorID');
+
+      Get.offAll(() => NavScreen(isAdmin: false));
+    } else {
+
+      setState(() {
+        _isLoginFailed = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       body: Stack(
         children: [
@@ -140,6 +209,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       SizedBox(height: 20),
+                      if (_isLoginFailed) // Show error message if login failed
+                        Text(
+                          'Invalid credentials',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      SizedBox(height: 20),
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
@@ -155,10 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       GestureDetector(
                         onTap: () {
                           if (_formKey.currentState!.validate()) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) =>bottom_bar()),
-                            );
+                            login();
                           }
                         },
                         child: Container(
@@ -186,39 +262,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       SizedBox(height: 160),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              "Don't have an account ?",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            GestureDetector( onTap: () {
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => regScreen()),
-                                );
-
-                            },
-                              child: Text(
-                                "Sign up",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 17,
-                                  color: Color(0xFF004AAD),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),

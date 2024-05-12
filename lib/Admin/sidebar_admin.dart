@@ -12,9 +12,6 @@ class SidebarAdmin extends StatelessWidget {
 
     final tilePadding = const EdgeInsets.only(left: 8.0, right: 8, top: 8);
 
-    // Determine user type based on your logic
-    final bool isAdmin = true; // Example: Assuming the user is admin
-
     return Drawer(
       backgroundColor: Color(0xFFa5a5e0),
       elevation: 0,
@@ -50,8 +47,7 @@ class SidebarAdmin extends StatelessWidget {
               selected: sidebarController.index.value == 1,
             ),
           ),
-          // Show Supervisor menu if admin, otherwise hide it
-          if (isAdmin)
+
             Padding(
               padding: tilePadding,
               child: ListTile(

@@ -13,14 +13,15 @@ class _ParkingAddPageState extends State<ParkingAddPage> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _parkingNameController = TextEditingController();
   TextEditingController _parkingAddressController = TextEditingController();
+  TextEditingController _parkingPriceController = TextEditingController();
 
-  List<Map<String, dynamic>> existingSupervisors = [];
+  List<Map<String, dynamic>> unassignedSupervisors = [];
   Map<String, dynamic>? selectedSupervisor;
 
   @override
   void initState() {
     super.initState();
-    fetchExistingSupervisors();
+    fetchUnassignedSupervisors();
   }
 
   @override
@@ -50,6 +51,7 @@ class _ParkingAddPageState extends State<ParkingAddPage> {
                     style: TextStyle(fontSize: 20),
                   ),
                   SizedBox(height: 30),
+                  SizedBox(height: 30),
                   TextFormField(
                     controller: _parkingNameController,
                     decoration: InputDecoration(labelText: 'Parking Name'),
@@ -72,12 +74,23 @@ class _ParkingAddPageState extends State<ParkingAddPage> {
                     },
                   ),
                   SizedBox(height: 20),
-                  if (existingSupervisors.isNotEmpty)
+                  TextFormField(
+                    controller: _parkingPriceController,
+                    decoration: InputDecoration(labelText: 'Parking Price'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter parking price';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  if (unassignedSupervisors.isNotEmpty)
                     Expanded(
                       child: ListView.builder(
-                        itemCount: existingSupervisors.length,
+                        itemCount: unassignedSupervisors.length,
                         itemBuilder: (context, index) {
-                          final supervisor = existingSupervisors[index];
+                          final supervisor = unassignedSupervisors[index];
                           return ListTile(
                             title: Text('${supervisor['nom_sup']} ${supervisor['prenom_sup']}'),
                             onTap: () {
@@ -108,29 +121,30 @@ class _ParkingAddPageState extends State<ParkingAddPage> {
     );
   }
 
-  void fetchExistingSupervisors() async {
-    final url = 'http://localhost:8080/superviseurs';
+  void fetchUnassignedSupervisors() async {
+    final url = 'http://localhost:8080/superviseurs/unassigned';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         setState(() {
-          existingSupervisors = List<Map<String, dynamic>>.from(jsonDecode(response.body));
+          unassignedSupervisors = List<Map<String, dynamic>>.from(jsonDecode(response.body));
         });
       } else {
-        print('Failed to fetch existing supervisors: ${response.statusCode}');
+        print('Failed to fetch unassigned supervisors: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching existing supervisors: $e');
+      print('Error fetching unassigned supervisors: $e');
     }
   }
 
   void _submitForm() async {
     String parkingName = _parkingNameController.text;
     String parkingAddress = _parkingAddressController.text;
-
+    double price= _parkingPriceController.text as double;
     Map<String, dynamic> data = {
       'nom_pk': parkingName,
       'adresse_pk': parkingAddress,
+      'price' : price,
       'superviseur': {
         'id_sup': selectedSupervisor!['id_sup'],
       },
@@ -214,5 +228,6 @@ class _ParkingAddPageState extends State<ParkingAddPage> {
 
     _parkingNameController.clear();
     _parkingAddressController.clear();
+    _parkingPriceController.clear();
   }
 }
