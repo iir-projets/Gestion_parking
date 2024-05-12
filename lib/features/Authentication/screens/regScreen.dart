@@ -1,12 +1,10 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' ;
-import 'package:flutter/widgets.dart';
-import 'package:login_signup/features/Authentication/screens/WelcomeScreen.dart';
-
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'LoginScreen.dart';
 
-class regScreen  extends StatefulWidget {
-  const regScreen ({Key? key}) : super(key: key);
+class regScreen extends StatefulWidget {
+  const regScreen({Key? key}) : super(key: key);
 
   @override
   _regScreenState createState() => _regScreenState();
@@ -17,10 +15,61 @@ class _regScreenState extends State<regScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+  TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   bool _isEmailValid = false;
+
+  Future<void> _register() async {
+    final firstName = _firstNameController.text;
+    final lastName = _lastNameController.text;
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    // Make API request to register the client
+    final data = {
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'password': password,
+    };
+
+    final jsonData = jsonEncode(data);
+
+    final response = await http.post(
+      Uri.parse('http://localhost:8080/client'), // Replace with your registration endpoint
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8', // Specify JSON content type
+      },
+      body: jsonData, // Pass JSON string as the request body
+    );
+
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    } else {
+      // Handle registration failure
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Registration Failed'),
+          content: Text('Failed to register. Please try again later.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -229,10 +278,7 @@ class _regScreenState extends State<regScreen> {
                       GestureDetector(
                         onTap: () {
                           if (_formKey.currentState!.validate()) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => WelcomeScreen()),
-                            );
+                           _register();
                           }
                         },
                         child: Container(

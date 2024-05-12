@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
  primaryColor: primary,
         useMaterial3: true,
       ),
-      home: const bottom_bar(),
+      home: const WelcomeScreen(),
     );
   }
 }

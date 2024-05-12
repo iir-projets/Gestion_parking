@@ -1,21 +1,99 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:login_signup/features/Authentication/screens/WelcomeScreen.dart';
+import 'package:http/http.dart' as http;
 import 'package:login_signup/features/Authentication/screens/regScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../Client/screens/bottom_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
+
+
+
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
+  @override
+void initState() {
+  super.initState();
+}
   bool _isPasswordVisible = false;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isEmailValid = false;
+
+  Future<void> _login() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    // Make API request to fetch list of existing clients
+    final response = await http.get(
+      Uri.parse('http://localhost:8080/clients'), // Replace with your endpoint
+    );
+
+    if (response.statusCode == 200) {
+      // Decode the response body
+      final List<dynamic> clients = jsonDecode(response.body);
+
+      // Check if entered email and password match any client
+      final client = clients.firstWhere(
+            (client) => client['email'] == email && client['password'] == password,
+        orElse: () => null,
+      );
+
+      if (client != null) {
+
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setInt('clientID', client['id']);
+        final clientID = prefs.getInt('clientID');
+        print('Supervisor ID saved in SharedPreferences: $clientID');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => bottom_bar()),
+        );
+      } else {
+        // Handle invalid credentials
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Login Failed'),
+            content: Text('Invalid email or password. Please try again.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    } else {
+      // Handle API request failure
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Error'),
+          content: Text('Failed to fetch client list. Please try again later.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
 
   @override
   void dispose() {
@@ -25,6 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
@@ -152,10 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       GestureDetector(
                         onTap: () {
                           if (_formKey.currentState!.validate()) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => WelcomeScreen()),
-                            );
+                            _login();
                           }
                         },
                         child: Container(
